@@ -1,0 +1,16 @@
+
+Run the following commands to get your Python environment setup:
+
+```
+virtualenv petitions
+pip install -r requirements.txt
+```
+
+Followed by these commands to get the data downloaded and ready to roll:
+
+```
+mkdir data
+python lib/download.py
+```
+
+You should now have a bunch of `.json` files in your data directory
