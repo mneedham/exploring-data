@@ -1,3 +1,8 @@
+= e-Petitions
+
+This is code to explore the UK government's e-Petitition open dataset.
+
+== Getting setup
 
 Run the following commands to get your Python environment setup:
 
@@ -14,3 +19,9 @@ python lib/download.py
 ```
 
 You should now have a bunch of `.json` files in your data directory
+
+
+== Useful links
+
+* http://www.data.parliament.uk/developers/
+* http://explore.data.parliament.uk/?endpoint=epetitions
