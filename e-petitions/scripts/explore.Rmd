@@ -63,11 +63,12 @@ Time for a bit of text processing based on this article - https://rstudio-pubs-s
 ```
  
 ```{r message=FALSE}
- library(tm)
- ds = DataframeSource(df %>% select(action))
- docs = VCorpus(ds)
- dtm = DocumentTermMatrix(docs)   
- tdm = TermDocumentMatrix(docs)   
+library(tm)
+
+ds = DataframeSource(df %>% select(action))
+docs = VCorpus(ds)
+dtm = DocumentTermMatrix(docs)   
+tdm = TermDocumentMatrix(docs)   
  
 dtms <- removeSparseTerms(dtm, 0.1) # This makes a matrix that is 10% empty space, maximum.   
 inspect(dtms)  
@@ -80,4 +81,18 @@ ord <- order(freq)
  
 ```{r message = FALSE}
  freq[tail(ord)]   
+```
+
+
+```{r message = FALSE}
+library(wordcloud)
+
+set.seed(142)   
+wordcloud(names(freq), freq, min.freq=25)   
+
+set.seed(142)   
+wordcloud(names(freq), freq, max.words=100)  
+
+set.seed(142)   
+wordcloud(names(freq), freq, min.freq=20, scale=c(5, .1), colors=brewer.pal(6, "Dark2"))   
 ```
