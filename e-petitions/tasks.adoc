@@ -1,19 +1,19 @@
 = Things to do
 
-
 * Chart showing the distribution of signature counts
-* [Research] Is there a way to call nltk or something similar from R?
 * [Research] What libraries do we have for doing topic modeling?
 * [Research] What libraries do we have for creating n-grams to look for common phrases?
-* Calculate Dunning Log Likelihood oh phrases like in the Whitehouse data set - https://gist.github.com/Prooffreader/11da9e99c3b3f2bbf7f3
+* Calculate Dunning Log Likelihood on phrases like in the Whitehouse data set - https://gist.github.com/Prooffreader/11da9e99c3b3f2bbf7f3
 
 = Done
+
+== 2016-04-07
+
+* Change the CSV creating script to include link to petition page + petition ID
+* [Research] Is there a way to call nltk or something similar from R?
+  ** Seems like we can use the tm package here - https://rstudio-pubs-static.s3.amazonaws.com/31867_8236987cf0a8444e962ccd2aec46d9c3.html#explore-your-data
 
 = 2016-04-06
 
 * Parse the JSON files and get the IDs
 * Download full JSON files from https://petition.parliament.uk/petitions/109381.json
-
-== 2016-04-07
-
-* Change the CSV creating script to include link to petition page + petition ID

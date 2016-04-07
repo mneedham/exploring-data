@@ -51,3 +51,32 @@ governmentResponse %>% select(link, action, createdAt, state, signatureCount) %>
 df %>% arrange(desc(signatureCount)) %>% select(link, action, createdAt, state, signatureCount) %>% head()
 ```
 
+Time for a bit of text processing based on this article - https://rstudio-pubs-static.s3.amazonaws.com/31867_8236987cf0a8444e962ccd2aec46d9c3.html#explore-your-data
+
+```{r message=FALSE}
+ Needed <- c("tm", "SnowballCC", "RColorBrewer", "ggplot2", "wordcloud", "biclust", "cluster", "igraph", "fpc") 
+# Uncomment these lines to install the packages
+ 
+#install.packages(Needed, dependencies=TRUE)   
+   
+# install.packages("Rcampdf", repos = "http://datacube.wu.ac.at/", type = "source")
+ ```
+ 
+```{r message=FALSE}
+ ds = DataframeSource(df %>% select(action))
+ docs = VCorpus(ds)
+ dtm = DocumentTermMatrix(docs)   
+ tdm = TermDocumentMatrix(docs)   
+ 
+dtms <- removeSparseTerms(dtm, 0.1) # This makes a matrix that is 10% empty space, maximum.   
+inspect(dtms)  
+
+freq <- colSums(as.matrix(dtm))   
+ord <- order(freq)   
+ ```
+ 
+ ## Most commonly used words in petitions
+ 
+ ```{r message = FALSE}
+ freq[tail(ord)]   
+ ```
