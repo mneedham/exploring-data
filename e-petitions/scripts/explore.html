@@ -166,8 +166,15 @@ governmentResponse %&gt;% count()</code></pre>
 </div>
 <div id="what-were-they" class="section level2">
 <h2>What were they?</h2>
-<pre class="r"><code>governmentResponse %&gt;% select(action, createdAt, state, signatureCount) %&gt;% head()</code></pre>
-<pre><code>##                                                                            action
+<pre class="r"><code>governmentResponse %&gt;% select(link, action, createdAt, state, signatureCount) %&gt;% head()</code></pre>
+<pre><code>##                                                   link
+## 1 https://petition.parliament.uk/petitions/104334.json
+## 2 https://petition.parliament.uk/petitions/104343.json
+## 3 https://petition.parliament.uk/petitions/104349.json
+## 4 https://petition.parliament.uk/petitions/104358.json
+## 5 https://petition.parliament.uk/petitions/104360.json
+## 6 https://petition.parliament.uk/petitions/104367.json
+##                                                                            action
 ## 1 To debate a vote of no confidence in Health Secretary the Right Hon Jeremy Hunt
 ## 2                    Introduce a UK National Day to celebrate our United Kingdom.
 ## 3                            Make the production, sale and use of cannabis legal.
@@ -181,6 +188,31 @@ governmentResponse %&gt;% count()</code></pre>
 ## 4 2015-07-20 16:20:40 closed          11409
 ## 5 2015-07-20 16:30:20 closed          18741
 ## 6 2015-07-20 16:47:27 closed          14288</code></pre>
+</div>
+<div id="what-have-been-the-most-popular-petitions-ever" class="section level2">
+<h2>What have been the most popular petitions ever?</h2>
+<pre class="r"><code>df %&gt;% arrange(desc(signatureCount)) %&gt;% select(link, action, createdAt, state, signatureCount) %&gt;% head()</code></pre>
+<pre><code>##                                                   link
+## 1 https://petition.parliament.uk/petitions/108072.json
+## 2 https://petition.parliament.uk/petitions/114003.json
+## 3 https://petition.parliament.uk/petitions/107516.json
+## 4 https://petition.parliament.uk/petitions/105991.json
+## 5 https://petition.parliament.uk/petitions/121152.json
+## 6 https://petition.parliament.uk/petitions/104349.json
+##                                                                            action
+## 1         Give the Meningitis B vaccine to ALL children, not just newborn babies.
+## 2                                              Block Donald J Trump from UK entry
+## 3           Stop all immigration and close the UK borders until ISIS is defeated.
+## 4 Accept more asylum seekers and increase support for refugee migrants in the UK.
+## 5               Consider a vote of No Confidence in Jeremy Hunt, Health Secretary
+## 6                            Make the production, sale and use of cannabis legal.
+##             createdAt  state signatureCount
+## 1 2015-09-09 17:27:00 closed         823345
+## 2 2015-11-28 17:55:11   open         583144
+## 3 2015-09-05 09:06:10 closed         463499
+## 4 2015-08-10 14:33:57 closed         450287
+## 5 2016-02-10 04:45:28   open         330463
+## 6 2015-07-20 15:36:33 closed         236997</code></pre>
 </div>
 </div>
 

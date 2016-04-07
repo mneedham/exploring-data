@@ -42,12 +42,12 @@ governmentResponse %>% count()
 ## What were they?
 
 ```{r message=FALSE}
-governmentResponse %>% select(action, createdAt, state, signatureCount) %>% head()
+governmentResponse %>% select(link, action, createdAt, state, signatureCount) %>% head()
 ```
 
 ## What have been the most popular petitions ever?
 
 ```{r message=FALSE}
-df %>% arrange(desc(signatureCount)) %>% select(action, createdAt, state, signatureCount) %>% head()
+df %>% arrange(desc(signatureCount)) %>% select(link, action, createdAt, state, signatureCount) %>% head()
 ```
 
