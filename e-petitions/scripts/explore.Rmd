@@ -60,9 +60,10 @@ Time for a bit of text processing based on this article - https://rstudio-pubs-s
 #install.packages(Needed, dependencies=TRUE)   
    
 # install.packages("Rcampdf", repos = "http://datacube.wu.ac.at/", type = "source")
- ```
+```
  
 ```{r message=FALSE}
+ library(tm)
  ds = DataframeSource(df %>% select(action))
  docs = VCorpus(ds)
  dtm = DocumentTermMatrix(docs)   
@@ -73,10 +74,10 @@ inspect(dtms)
 
 freq <- colSums(as.matrix(dtm))   
 ord <- order(freq)   
- ```
+```
  
- ## Most commonly used words in petitions
+## Most commonly used words in petitions
  
- ```{r message = FALSE}
+```{r message = FALSE}
  freq[tail(ord)]   
- ```
+```

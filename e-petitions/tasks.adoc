@@ -4,6 +4,7 @@
 * [Research] What libraries do we have for doing topic modeling?
 * [Research] What libraries do we have for creating n-grams to look for common phrases?
 * Calculate Dunning Log Likelihood on phrases like in the Whitehouse data set - https://gist.github.com/Prooffreader/11da9e99c3b3f2bbf7f3
+* Find the proper nouns/names used in petitions
 
 = Done
 
