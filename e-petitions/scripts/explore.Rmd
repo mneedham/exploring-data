@@ -1,0 +1,53 @@
+# Exploring UK petitions
+
+Setup the environment and load in appropriate libraries
+
+```{r  message=FALSE}
+library(dplyr)
+```
+
+Load the data and tidy up columns
+
+```{r message=FALSE}
+df = read.csv("../data/all_the_petitions.csv", na.strings = c("", "NA"))
+
+cleanDate = function(dateString) {
+  strptime(dateString, "%Y-%m-%dT%H:%M:%S") %>% as.POSIXct
+}
+
+df$createdAt = cleanDate(df$createdAt)
+df$updatedAt = cleanDate(df$updatedAt)
+df$openAt = cleanDate(df$openAt)
+df$closedAt = cleanDate(df$closedAt)
+df$governmentResponseAt = cleanDate(df$governmentResponseAt)
+df$scheduledDebateDate = cleanDate(df$scheduledDebateDate)
+df$responseThresholdReachedAt = cleanDate(df$responseThresholdReachedAt)
+
+df %>% select(action, createdAt, state, signatureCount) %>% head()
+```
+
+## How many are not closed yet?
+
+```{r message=FALSE}
+df %>% filter(!is.na(closedAt)) %>% count()
+```
+
+## How many petitions got a government response?
+
+```{r message=FALSE}
+governmentResponse = df %>% filter(!is.na(governmentResponseAt))
+governmentResponse %>% count()
+```
+
+## What were they?
+
+```{r message=FALSE}
+governmentResponse %>% select(action, createdAt, state, signatureCount) %>% head()
+```
+
+## What have been the most popular petitions ever?
+
+```{r message=FALSE}
+df %>% arrange(desc(signatureCount)) %>% select(action, createdAt, state, signatureCount) %>% head()
+```
+

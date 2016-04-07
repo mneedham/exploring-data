@@ -1,0 +1,7 @@
+= Things to do
+
+
+= Done
+
+* Parse the JSON files and get the IDs
+* Download full JSON files from https://petition.parliament.uk/petitions/109381.json
