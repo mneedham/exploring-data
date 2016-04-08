@@ -62,16 +62,29 @@ Time for a bit of text processing based on this article - https://rstudio-pubs-s
 # install.packages("Rcampdf", repos = "http://datacube.wu.ac.at/", type = "source")
 ```
  
-```{r message=FALSE}
+# Load and clean the text 
+ 
+```{r message=FALSE} 
 library(tm)
+library(SnowballC)   
 
 ds = DataframeSource(df %>% select(action))
 docs = VCorpus(ds)
+docs <- tm_map(docs, removePunctuation)   
+docs <- tm_map(docs, removeNumbers) 
+docs <- tm_map(docs, tolower)   
+docs <- tm_map(docs, removeWords, stopwords("english"))  
+docs <- tm_map(docs, stemDocument)   
+docs <- tm_map(docs, stripWhitespace)  
+docs <- tm_map(docs, PlainTextDocument)  
+```
+
+ 
+```{r message=FALSE}
 dtm = DocumentTermMatrix(docs)   
 tdm = TermDocumentMatrix(docs)   
  
 dtms <- removeSparseTerms(dtm, 0.1) # This makes a matrix that is 10% empty space, maximum.   
-inspect(dtms)  
 
 freq <- colSums(as.matrix(dtm))   
 ord <- order(freq)   
@@ -80,7 +93,7 @@ ord <- order(freq)
 ## Most commonly used words in petitions
  
 ```{r message = FALSE}
- freq[tail(ord)]   
+freq[tail(ord)]   
 ```
 
 
@@ -95,4 +108,68 @@ wordcloud(names(freq), freq, max.words=100)
 
 set.seed(142)   
 wordcloud(names(freq), freq, min.freq=20, scale=c(5, .1), colors=brewer.pal(6, "Dark2"))   
+```
+
+## Find frequent terms in petitions
+
+```{r message=FALSE}
+findFreqTerms(dtm, lowfreq=50) 
+
+wf <- data.frame(word=names(freq), freq=freq)   
+wf %>% arrange(desc(freq)) %>% head()
+```
+
+## Plot the most popular words
+
+```{r message=FALSE}
+library(ggplot2)   
+p <- ggplot(subset(wf, freq>50), aes(word, freq))    
+p <- p + geom_bar(stat="identity")   
+p <- p + theme(axis.text.x=element_text(angle=45, hjust=1))   
+p   
+```
+
+## Word correlations
+
+```{r message=FALSE}
+findAssocs(dtm, c("tax", "google"), corlimit=0.1)
+```
+
+## How many petitions are about tax?
+
+```{r message=FALSE}
+df %>% filter(grepl("tax", action)) %>% count()
+```
+
+## And how many about evasion?
+
+```{r message=FALSE}
+df %>% filter(grepl("evas", action)) %>% count()
+```
+
+## The underlying word stemming function
+
+```{r message=FALSE}
+wordStem(c("evasion"))
+```
+
+## Successful petitions
+
+You have to get 10,000 signatures for a government response
+You have to get 100,000 signatures for a debate in parliament
+
+```{r message=FALSE}
+df %>% filter(signatureCount > 10000) %>% count()
+df %>% filter(signatureCount > 100000) %>% count()
+```
+
+According to https://petition.parliament.uk/:
+
+172 petitions got a response from the Government
+22 petitions were debated in the House of Commons
+
+which means some petitions which fitted into those categories haven't been responded to yet for some reason.
+
+```{r message=FALSE}
+df %>% filter(signatureCount > 10000 & is.na(governmentResponseAt)) %>% select(link, action, signatureCount)
 ```
