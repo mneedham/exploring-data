@@ -173,3 +173,57 @@ which means some petitions which fitted into those categories haven't been respo
 ```{r message=FALSE}
 df %>% filter(signatureCount > 10000 & is.na(governmentResponseAt)) %>% select(link, action, signatureCount)
 ```
+
+Let's split ones which get less than 10,000 signatures and ones that get more than 10,000 signatures and see if the words used are any different.
+
+```{r message=FALSE}
+success = df %>% filter(signatureCount > 10000)
+not_success = df %>% filter(signatureCount < 10000)
+```
+
+```{r message=FALSE}
+createCorpus = function(df) {
+  ds = DataframeSource(df %>% select(action))
+  docs = VCorpus(ds)
+  docs <- tm_map(docs, removePunctuation)   
+  docs <- tm_map(docs, removeNumbers) 
+  docs <- tm_map(docs, tolower)   
+  docs <- tm_map(docs, removeWords, stopwords("english"))  
+  docs <- tm_map(docs, stemDocument)   
+  docs <- tm_map(docs, stripWhitespace)  
+  docs <- tm_map(docs, PlainTextDocument) 
+  return(docs)
+}
+```
+
+```{r message=FALSE}
+successCorpus = createCorpus(success %>% select(action))
+success_dtm = DocumentTermMatrix(successCorpus)   
+success_tdm = TermDocumentMatrix(successCorpus)   
+ 
+success_dtms <- removeSparseTerms(success_dtm, 0.1) # This makes a matrix that is 10% empty space, maximum. 
+success_freq <- colSums(as.matrix(success_dtm))   
+success_ord <- order(success_freq) 
+
+data.frame(word=names(success_freq), freq=success_freq) %>% arrange(desc(freq)) %>% head()
+```
+
+```{r message=FALSE}
+notSuccessCorpus = createCorpus(not_success %>% select(action))
+notSuccess_dtm = DocumentTermMatrix(notSuccessCorpus)   
+notSuccess_tdm = TermDocumentMatrix(notSuccessCorpus)   
+ 
+notSuccess_dtms <- removeSparseTerms(success_dtm, 0.1) # This makes a matrix that is 10% empty space, maximum. 
+notSuccess_freq <- colSums(as.matrix(notSuccess_dtm))   
+notSuccess_ord <- order(notSuccess_freq) 
+
+data.frame(word=names(notSuccess_freq), freq=notSuccess_freq) %>% arrange(desc(freq)) %>% head()
+```
+
+It seems like the same type of words show up both in successful petitions and in unsucessful ones. 
+It's all about stopping, making or banning something!
+
+At the moment we have the frequency of these words across the whole set of documents but we don't have the frequency per 1000 words like in the Whitehouse version - http://www.prooffreader.com/2016/03/most-characteristic-words-in-successful.html?m=1
+
+We also haven't yet looked into the full text of a petition, only the titles.
+We also haven't looked at phrases (n-grams) that may occur in the documents - need to figure out how to do that with the tm package.
