@@ -227,3 +227,5 @@ At the moment we have the frequency of these words across the whole set of docum
 
 We also haven't yet looked into the full text of a petition, only the titles.
 We also haven't looked at phrases (n-grams) that may occur in the documents - need to figure out how to do that with the tm package.
+
+
