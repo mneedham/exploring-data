@@ -56,7 +56,6 @@ tdm = TermDocumentMatrix(vcorpus, control = list(tokenize = allTheGramsTokenizer
 freq = rowSums(as.matrix(tdm))
 data.frame(word = names(freq), freq = freq) %>% arrange(desc(freq)) %>% head(10)
 
-
 # I think DocumentTermMatrix and TermDocumentMatrix are the inverse of each other. But then it's weird 
 # why I can't get the count of terms from the TermDocumentMatrix since in theory that's in a better format
 # to start with
@@ -68,3 +67,83 @@ data.frame(word = names(freq), freq = freq) %>% arrange(desc(freq)) %>% head(10)
 
 # Order the bi and tri grams based on TF/IDF score rather than just frequency
 # then work out which phrases appear in successful and unsuccessful petitions
+
+tdm = TermDocumentMatrix(vcorpus, control = list(tokenize = allTheGramsTokenizer, weighting = weightTfIdf))
+freq = rowSums(as.matrix(tdm))
+data.frame(word = names(freq), freq = freq) %>% arrange(desc(freq)) %>% head(10)
+
+# didn't end up making much difference. The results are still dominated by shorter phrases
+
+configurableTokenizer = function(grams) {
+  function(x) {
+    return(unlist(sapply(grams, function(n) lapply(ngrams(words(x), n), paste, collapse=" ")), use.names = FALSE))
+  }
+}
+
+tdm = TermDocumentMatrix(vcorpus, control = list(tokenize = configurableTokenizer(2:3), weighting = weightTfIdf))
+freq = rowSums(as.matrix(tdm))
+data.frame(word = names(freq), freq = freq) %>% arrange(desc(freq)) %>% head(10)
+
+# Successful / Unsuccessful n-grams
+successCorpus = createCorpus(success %>% select(action))
+success_tdm = TermDocumentMatrix(successCorpus, list(tokenize = configurableTokenizer(2)))   
+freq = rowSums(as.matrix(success_tdm))
+data.frame(word = names(freq), freq = freq) %>% arrange(desc(freq)) %>% head(10)
+
+notSuccessCorpus = createCorpus(not_success %>% select(action))
+notSuccess_tdm = TermDocumentMatrix(notSuccessCorpus, list(tokenize = configurableTokenizer(2)))   
+freq = rowSums(as.matrix(notSuccess_tdm))
+data.frame(word = names(freq), freq = freq) %>% arrange(desc(freq)) %>% head(10)
+
+# log likelihood
+logLikely = function(n1, t1, n2, t2) {
+  n1=n1+1
+  n2=n2+1 
+  
+  e1 = t1 * 1.0 * (n1 + n2) / (t1 + t2)
+  e2 = t2 * 1.0 * (n1 + n2) / (t1 + t2)
+  LL = 2 * ((n1 * log(n1 / e1)) + n2 * log(n2/e2))
+  
+  if(n2 * 1.0 / t2 > n1 * 1.0 / t1) {
+    return(-LL)
+  } else {
+    return(LL)
+  }
+}
+
+successCorpus = createCorpus(success %>% select(action))
+success_tdm = TermDocumentMatrix(successCorpus)   
+succcess_freq = rowSums(as.matrix(success_tdm))
+df_success = data.frame(word = names(succcess_freq), freq = succcess_freq)
+
+notSuccessCorpus = createCorpus(not_success %>% select(action))
+notSuccess_tdm = TermDocumentMatrix(notSuccessCorpus)   
+notSuccess_freq = rowSums(as.matrix(notSuccess_tdm))
+df_notSuccess = data.frame(word = names(notSuccess_freq), freq = notSuccess_freq)
+
+successWords = rownames(success_tdm)
+notSuccessWords = rownames(notSuccess_tdm)
+
+calculateLL = function(word) {
+  success_index = match(word, successWords)[1]
+  successFreq = df_success[success_index,]$freq
+  
+  notSuccess_index = match(word, notSuccessWords)[1]
+  notSuccessFreq = df_notSuccess[notSuccess_index,]$freq
+  
+  successFreq=ifelse(is.na(successFreq), 0, successFreq)
+  notSuccessFreq=ifelse(is.na(notSuccessFreq), 0, notSuccessFreq)
+  
+  ll = logLikely(successFreq, sum(df_success$freq), notSuccessFreq, sum(df_notSuccess$freq))
+  
+  return(ll)
+}
+
+lls = sapply(successWords, calculateLL)
+result = data.frame(word = names(lls), score = lls)
+result %>% arrange(desc(score)) %>% head()
+
+# At the moment we are counting words multiple times per document whereas in the Whitehouse blog post
+# they only count once per document - http://www.prooffreader.com/2016/03/most-characteristic-words-in-successful.html?m=1
+
+#frequency per 1000 words
