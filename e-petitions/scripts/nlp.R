@@ -146,4 +146,31 @@ result %>% arrange(desc(score)) %>% head()
 # At the moment we are counting words multiple times per document whereas in the Whitehouse blog post
 # they only count once per document - http://www.prooffreader.com/2016/03/most-characteristic-words-in-successful.html?m=1
 
+# content(tm_map(vcorpus, content_transformer(toupper))[[1]])
+
+uniqueWords = function(d) {
+  return(paste(unique(strsplit(d, " ")[[1]]), collapse = ' '))
+}
+
+vcorpus = content(tm_map(vcorpus, content_transformer(uniqueWords))[[1]])
+
+successCorpus = createCorpus(success %>% select(action))
+successCorpus = tm_map(successCorpus, content_transformer(uniqueWords))
+success_tdm = TermDocumentMatrix(successCorpus)   
+succcess_freq = rowSums(as.matrix(success_tdm))
+df_success = data.frame(word = names(succcess_freq), freq = succcess_freq)
+
+notSuccessCorpus = createCorpus(not_success %>% select(action))
+notSuccessCorpus = tm_map(notSuccessCorpus, content_transformer(uniqueWords))
+notSuccess_tdm = TermDocumentMatrix(notSuccessCorpus)   
+notSuccess_freq = rowSums(as.matrix(notSuccess_tdm))
+df_notSuccess = data.frame(word = names(notSuccess_freq), freq = notSuccess_freq)
+
+successWords = rownames(success_tdm)
+notSuccessWords = rownames(notSuccess_tdm)
+
+lls = sapply(successWords, calculateLL)
+result = data.frame(word = names(lls), score = lls)
+result %>% arrange(desc(score)) %>% head()
+
 #frequency per 1000 words
