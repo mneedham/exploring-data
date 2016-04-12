@@ -1,0 +1,87 @@
+---
+title: "Whitehouse"
+output: html_document
+---
+
+This document is for trying to reproduce the Whitehouse log likelihood scores to check we've actually written the function correctly.
+
+```{r message=FALSE, warning = FALSE}
+library(tm)
+library(SnowballC)   
+library(dplyr)
+```
+
+Now we've got the libraries ready we'll read the file in:
+
+```{r, echo=FALSE}
+df = read.csv("../data/wtp_data_petitions.csv", header = FALSE)
+names(df) = c("serial", "id", "type", "title", "text", "threshold", "count", "needed", "url", "deadline", "status", "created")
+
+df %>% head()
+```
+
+```{r message==FALSE}
+uniqueWords = function(d) {
+  return(paste(unique(strsplit(d, " ")[[1]]), collapse = ' '))
+}
+
+logLikely = function(n1, t1, n2, t2) {
+  n1=n1+1
+  n2=n2+1 
+  
+  e1 = t1 * 1.0 * (n1 + n2) / (t1 + t2)
+  e2 = t2 * 1.0 * (n1 + n2) / (t1 + t2)
+  LL = 2 * ((n1 * log(n1 / e1)) + n2 * log(n2/e2))
+  
+  if(n2 * 1.0 / t2 > n1 * 1.0 / t1) {
+    return(-LL)
+  } else {
+    return(LL)
+  }
+}
+```
+
+```{r message=FALSE}
+successful = VCorpus(DataframeSource(df %>% filter(status == "Reviewed") %>% select(text)))
+successful = tm_map(successful, removePunctuation)
+successful = tm_map(successful, stripWhitespace)  
+successful = tm_map(successful, stemDocument)   
+successful = tm_map(successful, content_transformer(uniqueWords))
+successful = tm_map(successful, PlainTextDocument)
+successful_tdm = TermDocumentMatrix(successful)
+successfulTerms = Terms(successful_tdm)
+
+unsuccessful = VCorpus(DataframeSource(df %>% filter(status == "Closed") %>% select(text)))
+unsuccessful = tm_map(unsuccessful, removePunctuation)
+unsuccessful = tm_map(unsuccessful, stripWhitespace)  
+unsuccessful = tm_map(unsuccessful, stemDocument)   
+unsuccessful = tm_map(unsuccessful, content_transformer(uniqueWords))
+unsuccessful = tm_map(unsuccessful, PlainTextDocument)
+unsuccessful_tdm = TermDocumentMatrix(unsuccessful)
+unsuccessfulTerms = Terms(unsuccessful_tdm)
+
+success_freq = rowSums(as.matrix(successful_tdm))
+df_success = data.frame(word = names(success_freq), freq = success_freq)
+
+notSuccess_freq = rowSums(as.matrix(unsuccessful_tdm))
+df_notSuccess = data.frame(word = names(notSuccess_freq), freq = notSuccess_freq)
+
+calculateLL = function(word) {
+  success_index = match(word, successfulTerms)[1]
+  successFreq = df_success[success_index,]$freq
+  
+  notSuccess_index = match(word, unsuccessfulTerms)[1]
+  notSuccessFreq = df_notSuccess[notSuccess_index,]$freq
+  
+  successFreq=ifelse(is.na(successFreq), 0, successFreq)
+  notSuccessFreq=ifelse(is.na(notSuccessFreq), 0, notSuccessFreq)
+  
+  ll = logLikely(successFreq, sum(df_success$freq), notSuccessFreq, sum(df_notSuccess$freq))
+  
+  return(ll)
+}
+
+lls = sapply(successfulTerms, calculateLL)
+result = data.frame(word = names(lls), score = lls)
+result %>% arrange(desc(score)) %>% head()
+```

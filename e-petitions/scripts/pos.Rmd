@@ -1,0 +1,75 @@
+---
+title: "post"
+output: html_document
+---
+
+Sys.setenv(JAVA_HOME = '/Library/Java/JavaVirtualMachines/jdk1.8.0_51.jdk/Contents/Home') 
+Sys.setenv(LD_LIBRARY_PATH = '$LD_LIBRARY_PATH:$JAVA_HOME/lib')
+
+```{r message=FALSE}
+install.packages("foo", repos = "http://datacube.wu.ac.at/", type = "source")
+
+```
+
+
+```{r message=FALSE}
+library(NLP)
+library(openNLP)
+install.packages("openNLPmodels.en", repos = "http://datacube.wu.ac.at/", type = "source")
+library(tm)
+
+
+
+
+s <- paste(c("Pierre Vinken, 61 years old, will join the board as a ",
+"nonexecutive director Nov. 29.\n",
+"Mr. Vinken is chairman of Elsevier N.V., ",
+"the Dutch publishing group."),
+collapse = "")
+s <- as.String(s)
+
+sent_token_annotator <- Maxent_Sent_Token_Annotator()
+word_token_annotator <- Maxent_Word_Token_Annotator()
+a2 <- annotate(s, list(sent_token_annotator, word_token_annotator))
+## Entity recognition for persons.
+entity_annotator <- Maxent_Entity_Annotator()
+entity_annotator
+annotate(s, entity_annotator, a2)
+## Directly:
+entity_annotator(s, a2)
+## And slice ...
+s[entity_annotator(s, a2)]
+## Variant with sentence probabilities as features.
+annotate(s, Maxent_Entity_Annotator(probs = TRUE), a2)
+
+# part of speech tagging
+s = "British citizens are being priced out of almost every market - commercial property, central London, and especially land. This is due, in part, to wealthy foreign nationals buying our cities to use as second (or tenth) homes. This is only part of the issue, but it is a part that we can change."
+s = as.String(s)
+
+a3 = annotate(s, list(Maxent_Sent_Token_Annotator(), Maxent_Word_Token_Annotator(), Maxent_POS_Tag_Annotator()))
+
+words = subset(a3, type == "word")
+
+wordsDF = data.frame(start = words$start, 
+                     end = words$end, 
+                     pos = sapply(words$features, function(x) x[[1]]))
+
+wordsDF = data.frame(start = words$start, 
+                     end = words$end, 
+                     pos = sapply(words$features, "[[", 1))
+
+wordsDF %>% head()
+
+wordsDF %>% mutate(word = substring(s, start, end)) %>% filter(pos == "NNP")
+
+for (i in 1:nrow(df %>% head(10))) {
+  row <- df[i,]
+  background = as.String(row$background %>% as.character)
+  a3 = annotate(background, list(Maxent_Sent_Token_Annotator(), Maxent_Word_Token_Annotator(), Maxent_POS_Tag_Annotator()))
+  words = subset(a3, type == "word")
+  wordsDF = data.frame(start = words$start, end = words$end, pos = sapply(words$features, "[[", 1))
+  print(background)
+  print(wordsDF %>% mutate(word = substring(background, start, end)) %>% filter(pos == "NNP") %>% select(word))
+}
+
+```

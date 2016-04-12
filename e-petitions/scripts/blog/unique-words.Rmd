@@ -1,0 +1,27 @@
+---
+title: "Blog - Unique words"
+output: html_document
+---
+
+```{r message=FALSE}
+library(tm)
+```
+
+```{r message=FALSE}
+text = c("I am Mark I am Mark", "Neo4j is cool Neo4j is cool")
+corpus = VCorpus(VectorSource(text))
+tdm = as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(1, Inf))))
+rowSums(tdm)
+```
+
+```{r message=FALSE}
+uniqueWords = function(d) {
+  return(paste(unique(strsplit(d, " ")[[1]]), collapse = ' '))
+}
+```
+
+```{r message=FALSE}
+corpus = tm_map(corpus, content_transformer(uniqueWords))
+tdm = as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(1, Inf))))
+rowSums(tdm)
+```
